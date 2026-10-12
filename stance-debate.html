@@ -70,6 +70,10 @@ section{margin-top:52px}
 .pc{display:inline-flex;align-items:center;gap:5px;padding:0 8px 0 6px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:600 12.5px/1.75 var(--font-ui);color:var(--ink);text-decoration:none;white-space:nowrap;vertical-align:1px}
 .pc::before{content:attr(data-no);font:600 10.5px var(--font-mono);color:var(--muted)}
 .pc:hover{border-color:var(--ink)}
+/* papers the atlas hides by de-duplication (list in library/dedup.json) */
+.pc.gone{border-style:dashed}
+.pc.gone::after{content:"已去重";font:700 10.5px var(--font-ui);color:var(--agree)}
+.lede.dedup-note{font-size:13px;color:var(--muted);margin-top:8px}
 
 /* same text, two readings */
 .reading{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start;margin-top:30px}
@@ -223,12 +227,13 @@ footer{margin-top:44px;font-size:12.5px;color:var(--muted);border-top:1px solid 
 <div class="wrap">
   <div class="topbar">
     <span>角色扮演论文图谱 · 专题</span>
-    <a id="back" href="paper-atlas.html#story">← 回到图谱（64 篇）</a>
+    <a id="back" href="paper-atlas.html#story">← 回到图谱</a>
   </div>
 
   <header class="hero">
     <h1><span class="l">立场派</span><span class="vs">与</span><span class="r">安全派</span></h1>
     <p class="lede">一个角色说出强硬的立场，是<b>入戏</b>，还是<b>失守</b>？下面先看同一段输出的两种读法，再摊开两派各自的证据、论文库里谁站在哪一边，最后看两派其实都同意在哪里停下，以及“入戏”和“安全”能不能同时保住。</p>
+    <p class="lede dedup-note">去重：图谱默认隐去 12 篇（和另一篇几乎一样，或质量很差）。本页按全部 64 篇写，提到其中几篇时标“已去重”：ADMP 与 SaRFT 同题同结论，RoleCDE 与 Moral RolePlay 结论相同，RoleRef 与 RoleKE-Bench 同题同结论，Too Nice 的头条数字和自己的表格对不上。引用时用并入的那一篇；鼠标停在标签上可看。</p>
   </header>
 
   <!-- 1. same output, two readings -->
@@ -554,11 +559,22 @@ footer{margin-top:44px;font-size:12.5px;color:var(--muted);border-top:1px solid 
   /* Paper chips open the paper's page in the atlas: index.html on the hosted site, paper-atlas.html next to this file locally. */
   var atlas = /github\.io$/.test(location.hostname) ? 'index.html' : 'paper-atlas.html';
   document.getElementById('back').href = atlas + '#story';
+  /* 去重 (same list as library/dedup.json): atlas number -> why it is hidden */
+  var GONE = {
+    36: '与 SaRFT（34）同题同结论，引用时用 SaRFT', 19: '同组把 InCharacter（50）的量表从评测挪到训练，引用时用 InCharacter',
+    5: '与 RoleKE-Bench（02）同题同结论，引用时用 RoleKE-Bench', 41: '与 Moral RolePlay（42）结论相同，引用时用 Moral RolePlay',
+    11: '与 HER（12）同一招，引用时用 HER', 45: '与 OmniCharacter（43）同题，更晚更弱，引用时用 OmniCharacter',
+    62: '与 Crab（61）同目标、做法照搬 Character-LLM，引用时用 Crab',
+    64: '质量很差：综述，偏题且单薄', 32: '质量很差：增量改动，基线自造', 17: '质量很差：评测不可靠、数字对不上',
+    21: '质量很差：只比静态提示，提升由评分构造决定', 40: '质量很差：头条数字与自己的表格矛盾'
+  };
   Array.prototype.forEach.call(document.querySelectorAll('.pc[data-p]'), function (a) {
-    var n = ('0' + a.getAttribute('data-p')).slice(-2);
+    var p = +a.getAttribute('data-p');
+    var n = ('0' + p).slice(-2);
     a.setAttribute('data-no', n);
     a.href = atlas + '#p' + n;
     a.title = '在图谱里打开第 ' + n + ' 篇';
+    if (GONE[p]) { a.classList.add('gone'); a.title = '已去重：' + GONE[p] + '（在图谱里打开第 ' + n + ' 篇）'; }
   });
 
   /* Formula steps light up the matching marks in the two graphs. */
